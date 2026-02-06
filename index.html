@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>黄道十二宫排序</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">黄道十二宫排序</h1>
+    <p class="subtitle">将星座按正确顺序排列：白羊 → 金牛 → 双子 → … → 双鱼</p>
+
+    <div class="info-bar">
+      <div class="info-item">
+        <span class="info-label">剩余挑战</span>
+        <span class="info-value" id="challenges">13</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">已归位</span>
+        <span class="info-value" id="cleared">0</span>
+        <span class="info-label">/ 12</span>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">点击任意星座格子开始挑战</div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="actions">
+      <button class="btn" id="resetBtn">重置盘面</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal">
+      <div class="modal-icon" id="modalIcon"></div>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-text" id="modalText"></div>
+      <button class="btn" id="modalBtn">再来一局</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
