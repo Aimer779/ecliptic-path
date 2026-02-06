@@ -22,12 +22,15 @@ const COLS = 4;
 // 位置8:人马(8),  位置9:室女(5),  位置10:宝瓶(10), 位置11:金牛(1)
 const INITIAL_BOARD = [4, 11, 2, 7, 9, 0, 6, 3, 8, 5, 10, 1];
 const INITIAL_CHALLENGES = 13;
+const INITIAL_POINTS = 999;
+const ADD_CHALLENGE_COST = 5;
 
 const state = {
   board: [],
   challenges: 0,
   selectedIndex: -1,
   gameOver: false,
+  points: 0,
 };
 
 // DOM 引用
@@ -41,6 +44,8 @@ const modalTitleEl = document.getElementById('modalTitle');
 const modalTextEl = document.getElementById('modalText');
 const modalBtnEl = document.getElementById('modalBtn');
 const resetBtnEl = document.getElementById('resetBtn');
+const pointsEl = document.getElementById('points');
+const addChallengeBtn = document.getElementById('addChallengeBtn');
 
 let cellEls = [];
 
@@ -78,6 +83,7 @@ function checkWin() {
 function init() {
   state.board = [...INITIAL_BOARD];
   state.challenges = INITIAL_CHALLENGES;
+  state.points = INITIAL_POINTS;
   state.selectedIndex = -1;
   state.gameOver = false;
 
@@ -110,6 +116,8 @@ function render() {
   // 更新信息栏
   challengesEl.textContent = state.challenges;
   clearedEl.textContent = cleared;
+  pointsEl.textContent = state.points;
+  addChallengeBtn.disabled = state.points < ADD_CHALLENGE_COST || state.gameOver;
 
   for (let i = 0; i < 12; i++) {
     const cell = cellEls[i];
@@ -233,9 +241,21 @@ function showModal(won) {
   }, 500);
 }
 
+function addChallenge() {
+  if (state.gameOver) return;
+  if (state.points < ADD_CHALLENGE_COST) return;
+
+  state.points -= ADD_CHALLENGE_COST;
+  state.challenges++;
+  animateBump(challengesEl);
+  animateBump(pointsEl);
+  render();
+}
+
 // 事件绑定
 resetBtnEl.addEventListener('click', init);
 modalBtnEl.addEventListener('click', init);
+addChallengeBtn.addEventListener('click', addChallenge);
 
 // 启动游戏
 init();
