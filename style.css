@@ -220,6 +220,39 @@ body::before {
   cursor: not-allowed;
 }
 
+/* Edit mode */
+.grid.edit-mode .cell {
+  border-color: rgba(180, 100, 255, 0.15);
+  background: rgba(180, 100, 255, 0.03);
+}
+
+.grid.edit-mode .cell:hover {
+  background: rgba(180, 100, 255, 0.1);
+  border-color: rgba(180, 100, 255, 0.35);
+}
+
+.cell.edit-selected {
+  border-color: rgba(180, 100, 255, 0.8);
+  background: rgba(180, 100, 255, 0.12);
+  box-shadow: 0 0 20px rgba(180, 100, 255, 0.3), inset 0 0 15px rgba(180, 100, 255, 0.08);
+  animation: editPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes editPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(180, 100, 255, 0.3), inset 0 0 15px rgba(180, 100, 255, 0.08); }
+  50% { box-shadow: 0 0 30px rgba(180, 100, 255, 0.5), inset 0 0 20px rgba(180, 100, 255, 0.12); }
+}
+
+.btn-edit-active {
+  background: rgba(180, 100, 255, 0.15) !important;
+  border-color: rgba(180, 100, 255, 0.5) !important;
+  color: #c080ff !important;
+}
+
+.btn-edit-active:hover {
+  background: rgba(180, 100, 255, 0.25) !important;
+}
+
 /* Actions */
 .actions {
   display: flex;

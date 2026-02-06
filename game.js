@@ -31,6 +31,8 @@ const state = {
   selectedIndex: -1,
   gameOver: false,
   points: 0,
+  editMode: false,
+  editSelectedIndex: -1,
 };
 
 // DOM 引用
@@ -46,6 +48,7 @@ const modalBtnEl = document.getElementById('modalBtn');
 const resetBtnEl = document.getElementById('resetBtn');
 const pointsEl = document.getElementById('points');
 const addChallengeBtn = document.getElementById('addChallengeBtn');
+const editModeBtnEl = document.getElementById('editModeBtn');
 
 let cellEls = [];
 
@@ -86,8 +89,15 @@ function init() {
   state.points = INITIAL_POINTS;
   state.selectedIndex = -1;
   state.gameOver = false;
+  state.editMode = false;
+  state.editSelectedIndex = -1;
+
+  editModeBtnEl.textContent = '编辑盘面';
+  editModeBtnEl.classList.remove('btn-edit-active');
+  resetBtnEl.disabled = false;
 
   overlayEl.classList.remove('active');
+  gridEl.classList.remove('edit-mode');
   buildGrid();
   render();
 }
@@ -117,7 +127,10 @@ function render() {
   challengesEl.textContent = state.challenges;
   clearedEl.textContent = cleared;
   pointsEl.textContent = state.points;
-  addChallengeBtn.disabled = state.points < ADD_CHALLENGE_COST || state.gameOver;
+  addChallengeBtn.disabled = state.editMode || state.points < ADD_CHALLENGE_COST || state.gameOver;
+
+  // 编辑模式 class
+  gridEl.classList.toggle('edit-mode', state.editMode);
 
   for (let i = 0; i < 12; i++) {
     const cell = cellEls[i];
@@ -127,31 +140,42 @@ function render() {
     cell.querySelector('.name').textContent = zodiac.name;
 
     // 清除所有状态 class
-    cell.classList.remove('cleared', 'selected', 'swap-hint', 'disabled');
+    cell.classList.remove('cleared', 'selected', 'swap-hint', 'disabled', 'edit-selected');
 
-    // 已归位
-    if (isCleared(i)) {
-      cell.classList.add('cleared');
-    }
-
-    // 选中状态
-    if (state.selectedIndex === i) {
-      cell.classList.add('selected');
-    }
-
-    // 同行/同列提示
-    if (state.selectedIndex >= 0 && state.selectedIndex !== i && isSameRowOrCol(state.selectedIndex, i)) {
-      cell.classList.add('swap-hint');
-    }
-
-    // 游戏结束禁用
-    if (state.gameOver) {
-      cell.classList.add('disabled');
+    if (state.editMode) {
+      // 编辑模式渲染
+      if (state.editSelectedIndex === i) {
+        cell.classList.add('edit-selected');
+      }
+      if (isCleared(i)) {
+        cell.classList.add('cleared');
+      }
+    } else {
+      // 游戏模式渲染
+      if (isCleared(i)) {
+        cell.classList.add('cleared');
+      }
+      if (state.selectedIndex === i) {
+        cell.classList.add('selected');
+      }
+      if (state.selectedIndex >= 0 && state.selectedIndex !== i && isSameRowOrCol(state.selectedIndex, i)) {
+        cell.classList.add('swap-hint');
+      }
+      if (state.gameOver) {
+        cell.classList.add('disabled');
+      }
     }
   }
 
   // 更新提示文字
-  if (state.gameOver) {
+  if (state.editMode) {
+    if (state.editSelectedIndex >= 0) {
+      const selZodiac = ZODIACS[state.board[state.editSelectedIndex]];
+      hintEl.textContent = `编辑模式：已选中 ${selZodiac.symbol} ${selZodiac.name}，点击任意格子交换`;
+    } else {
+      hintEl.textContent = '编辑模式：点击两个格子交换位置，完成后点击「完成编辑」开始游戏';
+    }
+  } else if (state.gameOver) {
     hintEl.textContent = '';
   } else if (state.selectedIndex >= 0) {
     const selZodiac = ZODIACS[state.board[state.selectedIndex]];
@@ -162,6 +186,11 @@ function render() {
 }
 
 function handleClick(pos) {
+  if (state.editMode) {
+    handleEditClick(pos);
+    return;
+  }
+
   if (state.gameOver) return;
   if (state.challenges <= 0) return;
 
@@ -252,10 +281,65 @@ function addChallenge() {
   render();
 }
 
+function handleEditClick(pos) {
+  if (state.editSelectedIndex < 0) {
+    state.editSelectedIndex = pos;
+  } else if (state.editSelectedIndex === pos) {
+    state.editSelectedIndex = -1;
+  } else {
+    swap(state.editSelectedIndex, pos);
+    state.editSelectedIndex = -1;
+  }
+  render();
+}
+
+function enterEditMode() {
+  state.editMode = true;
+  state.editSelectedIndex = -1;
+  state.selectedIndex = -1;
+  state.gameOver = false;
+
+  editModeBtnEl.textContent = '完成编辑';
+  editModeBtnEl.classList.add('btn-edit-active');
+  addChallengeBtn.disabled = true;
+  resetBtnEl.disabled = true;
+
+  render();
+}
+
+function exitEditMode() {
+  if (checkWin()) {
+    hintEl.textContent = '当前盘面已是正确顺序，请至少交换一次再开始游戏';
+    return;
+  }
+
+  state.editMode = false;
+  state.editSelectedIndex = -1;
+  state.challenges = INITIAL_CHALLENGES;
+  state.points = INITIAL_POINTS;
+  state.selectedIndex = -1;
+  state.gameOver = false;
+
+  editModeBtnEl.textContent = '编辑盘面';
+  editModeBtnEl.classList.remove('btn-edit-active');
+  resetBtnEl.disabled = false;
+
+  render();
+}
+
+function toggleEditMode() {
+  if (state.editMode) {
+    exitEditMode();
+  } else {
+    enterEditMode();
+  }
+}
+
 // 事件绑定
 resetBtnEl.addEventListener('click', init);
 modalBtnEl.addEventListener('click', init);
 addChallengeBtn.addEventListener('click', addChallenge);
+editModeBtnEl.addEventListener('click', toggleEditMode);
 
 // 启动游戏
 init();
